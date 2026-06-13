@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>NuestroOS - Sistema Operativo del Corazón</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="splash-screen">
+        <div class="splash-content">
+            <div class="os-logo">
+                <i class="fas fa-heart"></i>
+                <span>NuestroOS</span>
+            </div>
+            <div class="loader">
+                <div class="loader-bar"></div>
+            </div>
+            <p class="loading-text">Cargando recuerdos... <span id="loading-percent">0</span>%</p>
+        </div>
+    </div>
+
+    <div id="desktop" style="display: none;">
+        <div class="desktop-background" id="desktop-bg"></div>
+        <div class="desktop-icons">
+            <div class="desktop-icon" data-app="photos"><div class="icon-bg"><i class="fas fa-images"></i></div><span>Fotos</span></div>
+            <div class="desktop-icon" data-app="letters"><div class="icon-bg"><i class="fas fa-envelope-open-text"></i></div><span>Cartas</span></div>
+            <div class="desktop-icon" data-app="music"><div class="icon-bg"><i class="fas fa-headphones"></i></div><span>Música</span></div>
+            <div class="desktop-icon" data-app="timeline"><div class="icon-bg"><i class="fas fa-chart-line"></i></div><span>Línea del tiempo</span></div>
+            <div class="desktop-icon" data-app="constellation"><div class="icon-bg"><i class="fas fa-star-of-life"></i></div><span>Constelación</span></div>
+            <div class="desktop-icon" data-app="secrets"><div class="icon-bg"><i class="fas fa-lock"></i></div><span>Secretos</span></div>
+            <div class="desktop-icon" data-app="settings"><div class="icon-bg"><i class="fas fa-cog"></i></div><span>Configuración</span></div>
+        </div>
+    </div>
+
+    <div id="taskbar" style="display: none;">
+        <div class="taskbar-start">
+            <button id="start-button" class="start-btn"><i class="fas fa-heart"></i><span>Inicio</span></button>
+        </div>
+        <div class="taskbar-apps" id="taskbar-apps"></div>
+        <div class="taskbar-right">
+            <div class="taskbar-notify"><i class="fas fa-bell"></i></div>
+            <div class="taskbar-clock" id="clock"></div>
+        </div>
+    </div>
+
+    <div id="windows-container"></div>
+    <div id="notification-area"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
