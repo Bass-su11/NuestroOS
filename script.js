@@ -1,6 +1,4 @@
-// ==================== NUESTRO OS - VERSIÓN COMPLETA CON DRIVE ====================
-// Incluye: persistencia base64, YouTube, Google Drive, galería, cartas, música, timeline, constelación, secretos, configuración.
-
+// ==================== NUESTRO OS - VERSIÓN COMPLETA CON DRIVE PARA FOTOS Y AUDIOS ====================
 let windows = [];
 let nextZIndex = 1000;
 let currentLetterIndex = 0;
@@ -204,7 +202,6 @@ function updateTaskbar() {
 }
 
 // ========== GALERÍA DE FOTOS Y VIDEOS (CON YOUTUBE Y DRIVE) ==========
-// Función para generar enlace directo de Google Drive a partir de URL o ID
 function generateDriveDirectUrl(input) {
     let fileId = null;
     const patterns = [
@@ -255,7 +252,7 @@ function renderPhotosApp() {
             let videoId = extractYoutubeId(item.url);
             if (videoId) thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
         } else if (isDrive) {
-            thumbnailUrl = item.url; // ya es thumbnail de drive
+            thumbnailUrl = item.url;
         }
         html += `
             <div class="photo-item">
@@ -274,13 +271,12 @@ function renderPhotosApp() {
              <button id="uploadMediaBtn" class="upload-photo-btn"><i class="fas fa-plus"></i> Subir imagen (se guarda)</button>
              <button id="uploadVideoUrlBtn" class="upload-photo-btn"><i class="fas fa-link"></i> Agregar video por URL</button>
              <button id="uploadYoutubeBtn" class="upload-photo-btn"><i class="fab fa-youtube"></i> Agregar video de YouTube</button>
-             <button id="uploadDriveBtn" class="upload-photo-btn"><i class="fab fa-google-drive"></i> Agregar desde Google Drive</button>
+             <button id="uploadDriveBtn" class="upload-photo-btn"><i class="fab fa-google-drive"></i> Agregar imagen desde Drive</button>
              <p><small>Imágenes se guardan. Videos: URL directa .mp4, YouTube (short/normal) o Google Drive (pega la URL compartida).</small></p>`;
     return html;
 }
 
 function attachPhotoEvents() {
-    // Imágenes normales
     document.querySelectorAll(".photo-thumb").forEach(img => {
         img.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -290,37 +286,32 @@ function attachPhotoEvents() {
                 let embedUrl = getYoutubeEmbedUrl(url);
                 if (embedUrl) showLightbox(embedUrl, "youtube");
             } else if (type === "drive") {
-                showLightbox(url, "image"); // drive ya es imagen directa
+                showLightbox(url, "image");
             } else {
                 showLightbox(url, "image");
             }
         });
     });
-    // Videos mp4
     document.querySelectorAll(".video-thumb").forEach(vid => {
         vid.addEventListener("click", (e) => {
             e.stopPropagation();
             showLightbox(vid.getAttribute("data-url"), "video");
         });
     });
-    // Eliminar
     document.querySelectorAll(".photo-delete").forEach(el => {
         el.addEventListener("click", (e) => {
             const idx = parseInt(el.getAttribute("data-idx"));
             if(!isNaN(idx)) { db.photos.splice(idx,1); saveData(); refreshWindowContent("photos"); showNotification("Elemento eliminado"); }
         });
     });
-    // Editar caption
     document.querySelectorAll(".caption-input").forEach(inp => {
         inp.addEventListener("change", (e) => {
             const idx = parseInt(inp.getAttribute("data-idx"));
             if(!isNaN(idx) && db.photos[idx]) { db.photos[idx].caption = inp.value; saveData(); }
         });
     });
-    // Paginación
     document.getElementById("prevPage")?.addEventListener("click", () => { if(currentPhotoPage>1){ currentPhotoPage--; refreshWindowContent("photos"); } });
     document.getElementById("nextPage")?.addEventListener("click", () => { if(currentPhotoPage*PHOTOS_PER_PAGE < db.photos.length){ currentPhotoPage++; refreshWindowContent("photos"); } });
-    // Subir imagen local
     document.getElementById("uploadMediaBtn")?.addEventListener("click", () => {
         const input = document.createElement("input");
         input.type = "file";
@@ -341,7 +332,6 @@ function attachPhotoEvents() {
         };
         input.click();
     });
-    // Agregar video por URL directa
     document.getElementById("uploadVideoUrlBtn")?.addEventListener("click", () => {
         const url = prompt("Ingresa la URL pública del video (directa .mp4 o .mov):");
         if(url && (url.startsWith("http") || url.startsWith("https"))) {
@@ -351,28 +341,26 @@ function attachPhotoEvents() {
             showNotification("Video agregado");
         } else showNotification("URL no válida");
     });
-    // Agregar video de YouTube
     document.getElementById("uploadYoutubeBtn")?.addEventListener("click", () => {
-        const url = prompt("Ingresa el enlace de YouTube (normal o short):\nEjemplo: https://youtu.be/abc123 o https://www.youtube.com/shorts/abc123");
+        const url = prompt("Ingresa el enlace de YouTube (normal o short):");
         if(url && (url.includes("youtube.com") || url.includes("youtu.be"))) {
             db.photos.push({ url: url, type: "youtube", caption: "Video de YouTube" });
             saveData();
             refreshWindowContent("photos");
-            showNotification("Video de YouTube agregado. Se mostrará como miniatura.");
+            showNotification("Video de YouTube agregado");
         } else showNotification("Enlace de YouTube no válido");
     });
-    // Agregar desde Google Drive
     document.getElementById("uploadDriveBtn")?.addEventListener("click", () => {
-        const driveUrl = prompt("Pega la URL de Google Drive o el FILE_ID:\nEjemplo: https://drive.google.com/file/d/ABC123/view");
+        const driveUrl = prompt("Pega la URL de Google Drive o el FILE_ID de la imagen:");
         if(driveUrl) {
             const directUrl = generateDriveDirectUrl(driveUrl);
             if(directUrl) {
                 db.photos.push({ url: directUrl, type: "image", caption: "Desde Google Drive" });
                 saveData();
                 refreshWindowContent("photos");
-                showNotification("Imagen de Google Drive agregada exitosamente");
+                showNotification("Imagen de Drive agregada");
             } else {
-                showNotification("No se pudo extraer el ID del archivo. Revisa el enlace.");
+                showNotification("No se pudo extraer el ID del archivo.");
             }
         }
     });
@@ -450,8 +438,8 @@ function openLetterEditor() {
             if(file.size <= 2*1024*1024) {
                 const base64 = await fileToBase64(file);
                 document.getElementById(`letter-img-url-${idx}`).value = base64;
-                showNotification("Imagen convertida y lista para guardar");
-            } else showNotification("La imagen es muy grande (máx 2MB)");
+                showNotification("Imagen convertida");
+            } else showNotification("Imagen muy grande");
         }
     };
     window.deleteLetter = (idx) => {
@@ -471,7 +459,7 @@ function openLetterEditor() {
     window.closeModal = () => modal.remove();
 }
 
-// ========== MÚSICA ==========
+// ========== MÚSICA (con Drive y sin límite de tamaño) ==========
 function renderMusicApp() {
     let songsHtml = `<div class="music-player-bar">
         <div class="player-controls">
@@ -502,8 +490,9 @@ function renderMusicApp() {
         <input type="text" id="newSongTitle" placeholder="Título">
         <input type="text" id="newSongArtist" placeholder="Artista">
         <textarea id="newSongDedication" placeholder="Dedicación"></textarea>
-        <p>Audio: <input type="file" id="newSongAudio" accept="audio/*"> (máx 2MB para guardar permanentemente)</p>
-        <p>O URL de audio: <input type="text" id="newSongAudioUrl" placeholder="https://... .mp3"></p>
+        <p>URL de audio (MP3, etc.): <input type="text" id="newSongAudioUrl" placeholder="https://..."></p>
+        <p>O subir archivo pequeño: <input type="file" id="newSongAudio" accept="audio/*"></p>
+        <button id="addSongDriveBtn" class="upload-photo-btn"><i class="fab fa-google-drive"></i> Agregar canción desde Drive</button>
         <label>Carátula: <input type="file" id="newSongCover" accept="image/*"></label>
         <button id="addSongBtn">Agregar</button>
     </div>`;
@@ -543,6 +532,7 @@ function attachMusicEvents() {
     document.getElementById("nextSongBtn")?.addEventListener("click", () => {
         if(db.songs.length) { currentSongIndex = (currentSongIndex+1)%db.songs.length; playSong(currentSongIndex); }
     });
+    // Agregar canción por URL o archivo pequeño
     document.getElementById("addSongBtn")?.addEventListener("click", async () => {
         const title = document.getElementById("newSongTitle").value.trim();
         const artist = document.getElementById("newSongArtist").value.trim() || "Anónimo";
@@ -553,7 +543,7 @@ function attachMusicEvents() {
         if(!audioFile && !audioUrl) { showNotification("Selecciona audio o URL"); return; }
         if(audioFile) {
             if(audioFile.size > 2 * 1024 * 1024) {
-                showNotification("Audio muy grande (>2MB). Usa URL externa.");
+                showNotification("Audio muy grande (>2MB). Usa URL externa o Drive.");
                 return;
             }
             audioUrl = await fileToBase64(audioFile);
@@ -564,6 +554,42 @@ function attachMusicEvents() {
         saveData();
         refreshWindowContent("music");
         showNotification("Canción agregada");
+    });
+    // Agregar canción desde Google Drive
+    document.getElementById("addSongDriveBtn")?.addEventListener("click", () => {
+        const driveUrl = prompt("Pega la URL de Google Drive del archivo de audio (MP3, etc.) o el FILE_ID:");
+        if(driveUrl) {
+            let fileId = null;
+            const patterns = [
+                /\/file\/d\/([a-zA-Z0-9_-]+)/,
+                /id=([a-zA-Z0-9_-]+)/,
+                /^([a-zA-Z0-9_-]+)$/
+            ];
+            for (let pattern of patterns) {
+                let match = driveUrl.match(pattern);
+                if (match) { fileId = match[1]; break; }
+            }
+            if (fileId) {
+                const audioUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+                const title = prompt("Título de la canción:", "Canción desde Drive");
+                if(title) {
+                    const artist = prompt("Artista:", "Mi amor");
+                    const dedication = prompt("Dedicación:", "Para ti ❤️");
+                    db.songs.push({
+                        audioUrl: audioUrl,
+                        coverUrl: "https://cdn.pixabay.com/photo/2016/03/31/18/36/music-1294886_960_720.png",
+                        title: title,
+                        artist: artist,
+                        dedication: dedication
+                    });
+                    saveData();
+                    refreshWindowContent("music");
+                    showNotification("Canción desde Drive agregada");
+                }
+            } else {
+                showNotification("No se pudo extraer el ID de Google Drive");
+            }
+        }
     });
 }
 
